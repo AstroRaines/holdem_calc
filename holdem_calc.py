@@ -12,7 +12,61 @@ def calculate(board, exact, num, input_file, hole_cards, verbose):
     hole_cards, n, e, board, filename = holdem_argparser.parse_lib_args(args)
     return run(hole_cards, n, e, board, filename, verbose)
 
+def determine_preflop_action(hole_cards):
+    card_values = {card.value for card in hole_cards if card is not None}
+    card_suits = {card.suit for card in hole_cards if card is not None}
+
+    # High cards or face cards
+    high_card_values = {11, 12, 13, 14}
+    if any(value in high_card_values for value in card_values):
+        return "Call or Raise", "You have a high card (Jack, Queen, King, or Ace)."
+
+    # Pairs
+    if len(card_values) == 1:
+        return "Call or Raise", "You have a pair, which can be strong pre-flop."
+
+    # Cards close enough for a potential straight
+    if len(card_values) == 2 and max(card_values) - min(card_values) <= 4:
+        return "Call or potentially Raise", "Your cards are close in value, potentially leading to a straight."
+
+    # Suited cards
+    if len(card_suits) == 1:
+        return "Call or Raise", "Your cards are suited, increasing the chances of a flush."
+
+    # Otherwise
+    return "Fold", "Your cards do not indicate a strong hand pre-flop."
+
+
 def run(hole_cards, num, exact, board, file_name, verbose):
+    # Determine the game stage
+    num_board_cards = len(board) if board else 0
+    if num_board_cards == 0:
+        stage = "Pre-flop"
+    elif num_board_cards == 3:
+        stage = "Flop"
+    elif num_board_cards == 4:
+        stage = "Turn"
+    elif num_board_cards == 5:
+        stage = "River"
+    else:
+        raise ValueError("Invalid number of board cards for a Texas Hold'em game.")
+
+    print(f"Game Stage: {stage}")
+
+    # Check if it is pre-flop
+    if board is None or len(board) == 0:
+        #print("Pre-flop Analysis:")
+        action = determine_preflop_action(hole_cards[0])
+        print(f"Suggested action: {action}")
+
+        if action == "Call or Raise":
+            print("Consider raising 3 or 4 Big Blinds.")
+        
+        print("Remember: Poker is about comfort with uncertainty. Be confident in your decisions.")
+        return  # Skip the rest of the simulation
+
+    # Rest of the function remains the same...
+
     if file_name:
         input_file = open(file_name, 'r')
         for line in input_file:
@@ -26,6 +80,7 @@ def run(hole_cards, num, exact, board, file_name, verbose):
     else:
         deck = holdem_functions.generate_deck(hole_cards, board)
         return run_simulation(hole_cards, num, exact, board, deck, verbose)
+    
 
 def run_simulation(hole_cards, num, exact, given_board, deck, verbose):
     num_players = len(hole_cards)
@@ -71,3 +126,5 @@ if __name__ == '__main__':
     start = time.time()
     main()
     print ("\nTime elapsed(seconds): ", time.time() - start)
+
+

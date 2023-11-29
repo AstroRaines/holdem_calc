@@ -248,21 +248,37 @@ def compare_hands(result_list):
     return winning_player_index
 
 # Print results
+# def print_results(hole_cards, winner_list, result_histograms):
+#     float_iterations = float(sum(winner_list))
+#     print ("Winning Percentages:")
+#     for index, hole_card in enumerate(hole_cards):
+#         winning_percentage = float(winner_list[index + 1]) / float_iterations
+#         if hole_card == (None, None):
+#             print ("(?, ?) : ", winning_percentage)
+#         else:
+#             print (hole_card, ": ", winning_percentage)
+#     print ("Ties: ", float(winner_list[0]) / float_iterations, "\n")
+#     for player_index, histogram in enumerate(result_histograms):
+#         print ("Player" + str(player_index + 1) + " Histogram: ")
+#         for index, elem in enumerate(histogram):
+#             print (hand_rankings[index], ": ", float(elem) / float_iterations)
+#         print
 def print_results(hole_cards, winner_list, result_histograms):
     float_iterations = float(sum(winner_list))
-    print ("Winning Percentages:")
-    for index, hole_card in enumerate(hole_cards):
-        winning_percentage = float(winner_list[index + 1]) / float_iterations
-        if hole_card == (None, None):
-            print ("(?, ?) : ", winning_percentage)
-        else:
-            print (hole_card, ": ", winning_percentage)
-    print ("Ties: ", float(winner_list[0]) / float_iterations, "\n")
-    for player_index, histogram in enumerate(result_histograms):
-        print ("Player" + str(player_index + 1) + " Histogram: ")
-        for index, elem in enumerate(histogram):
-            print (hand_rankings[index], ": ", float(elem) / float_iterations)
-        print
+    
+    # Print winning percentage for the first player only
+    first_player_winning_percentage = float(winner_list[1]) / float_iterations
+    print(f"Winning Probability: {first_player_winning_percentage * 100:.2f}%")
+    
+    # Print histogram for the first player with frequency > 0.1%
+    print("Potential Hands:")
+    for index, elem in enumerate(result_histograms[0]):
+        frequency = float(elem) / float_iterations
+        if frequency > 0.001:  # More than 0.1%
+            print(f"{hand_rankings[index]}: {frequency * 100:.2f}%")
+
+    # Note: Removed printing for other players and ties for brevity
+
 
 # Returns the winning percentages
 def find_winning_percentage(winner_list):
