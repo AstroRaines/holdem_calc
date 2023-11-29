@@ -36,6 +36,26 @@ def determine_preflop_action(hole_cards):
     # Otherwise
     return "Fold", "Your cards do not indicate a strong hand pre-flop."
 
+def generate_postflop_suggestion(winning_percentage, player_histogram):
+    # Basic threshold for making decisions
+    strong_hand_threshold = 0.7
+    moderate_hand_threshold = 0.4
+
+    # Strong winning probability
+    if winning_percentage >= strong_hand_threshold:
+        return "Raise", "Your winning probability is high, indicating a strong hand."
+    
+    # Moderate winning probability
+    elif winning_percentage >= moderate_hand_threshold:
+        return "Call", "You have a moderate chance of winning, consider calling."
+
+    # Analyze histogram for potential strong hands
+    for index, count in enumerate(player_histogram):
+        if count > 0 and holdem_functions.hand_rankings[index] in ["Straight", "Flush", "Full House"]:
+            return "Call", "You have a potential for a strong hand like a Straight, Flush, or Full House."
+
+    # Default suggestion
+    return "Fold", "Your hand strength and winning probability are not high enough to suggest aggression."
 
 def run(hole_cards, num, exact, board, file_name, verbose):
     # Determine the game stage
@@ -120,7 +140,23 @@ def run_simulation(hole_cards, num, exact, given_board, deck, verbose):
     if verbose:
         holdem_functions.print_results(hole_cards, winner_list,
                                        result_histograms)
-    return holdem_functions.find_winning_percentage(winner_list)
+    
+    #return holdem_functions.find_winning_percentage(winner_list)
+
+    # After simulation is complete
+    winning_percentages = holdem_functions.find_winning_percentage(winner_list)
+    player1_winning_percentage = winning_percentages[1]  # Assuming player 1 is the user
+    player1_histogram = result_histograms[0]
+
+    action, reason = generate_postflop_suggestion(player1_winning_percentage, player1_histogram)
+    
+    if verbose:
+        print(f"\nSuggested action: {action}")
+        print(f"Reason: {reason}")
+        #holdem_functions.print_results(hole_cards, winner_list, result_histograms)
+
+    return winning_percentages
+    
 
 if __name__ == '__main__':
     start = time.time()
